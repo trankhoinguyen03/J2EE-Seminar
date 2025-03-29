@@ -1,0 +1,98 @@
+services:
+  # MySQL (chứa 2 database: order_db và product_db)
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - microservices-network
+    command: --init-file /docker-entrypoint-initdb.d/init.sql --innodb-flush-log-at-trx-commit=2 --innodb-buffer-pool-size=128M
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - microservices-network
+
+  # Keycloak
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.6
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8083:8080"
+    command: start-dev
+    networks:
+      - microservices-network
+
+  # Config Server
+  config-server:
+    image: config-server:latest
+    build:
+      context: ./config-server
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"
+    networks:
+      - microservices-network
+
+  # Eureka Server
+  eureka-server:
+    image: eureka-server:latest
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+    depends_on:
+      - config-server  # Chỉ khai báo depends_on, không dùng condition
+    networks:
+      - microservices-network
+
+  # Prometheus
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - eureka-server
+    networks:
+      - microservices-network
+
+  # Grafana
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - microservices-network
+
+  # Zipkin
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
+    depends_on:
+      - rabbitmq
+    networks:
+      - microservices-network
+
+volumes:
+  mysql-data:
+
+networks:
+  microservices-network:
+    driver: bridge
