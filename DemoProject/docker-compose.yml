@@ -13,14 +13,14 @@ services:
       - microservices-network
     command: --init-file /docker-entrypoint-initdb.d/init.sql --innodb-flush-log-at-trx-commit=2 --innodb-buffer-pool-size=128M
 
-  # RabbitMQ
-  rabbitmq:
-    image: rabbitmq:3-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    networks:
-      - microservices-network
+  # # RabbitMQ
+  # rabbitmq:
+  #   image: rabbitmq:3-management
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   networks:
+  #     - microservices-network
 
   # Keycloak
   keycloak:
@@ -58,37 +58,37 @@ services:
     networks:
       - microservices-network
 
-  # Prometheus
-  prometheus:
-    image: prom/prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    depends_on:
-      - eureka-server
-    networks:
-      - microservices-network
+  # # Prometheus
+  # prometheus:
+  #   image: prom/prometheus
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  #   depends_on:
+  #     - eureka-server
+  #   networks:
+  #     - microservices-network
 
-  # Grafana
-  grafana:
-    image: grafana/grafana
-    ports:
-      - "3000:3000"
-    depends_on:
-      - prometheus
-    networks:
-      - microservices-network
+  # # Grafana
+  # grafana:
+  #   image: grafana/grafana
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - prometheus
+  #   networks:
+  #     - microservices-network
 
-  # Zipkin
-  zipkin:
-    image: openzipkin/zipkin
-    ports:
-      - "9411:9411"
-    depends_on:
-      - rabbitmq
-    networks:
-      - microservices-network
+  # # Zipkin
+  # zipkin:
+  #   image: openzipkin/zipkin
+  #   ports:
+  #     - "9411:9411"
+  #   depends_on:
+  #     - rabbitmq
+  #   networks:
+  #     - microservices-network
 
 volumes:
   mysql-data:
